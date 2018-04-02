@@ -32,14 +32,21 @@
    }
 
   function preDoIt() {
-    let arr_in;
+    let arr_in = [];
     if (document.getElementById('arrManual').value.length>0) {
       arr_in = document.getElementById('arrManual').value.split(' ');
-      arr_in.forEach ((val,idx,arr)=>{arr[idx]=isNaN(parseInt(val))?0:parseInt(val)});
-      document.getElementById('inpArray').innerHTML = 'Resulting input array: ['+arr_in.toString()+']';
+      arr_in.forEach((val,idx,arr)=>{arr[idx]=isNaN(parseInt(val))?0:parseInt(val)});
     } else {
-      document.getElementById('inpArray').innerHTML = document.getElementById('arrManual').value.length;
+      arr_in.length = (isNaN(parseInt(document.getElementById('arrSize').value)))?20:parseInt(document.getElementById('arrSize').value);
+      document.getElementById('arrSize').value = arr_in.length;
+      const maxR = (isNaN(parseInt(document.getElementById('arrMaxValue').value)))?100:parseInt(document.getElementById('arrMaxValue').value);
+      document.getElementById('arrMaxValue').value = maxR;
+      console.log('arr_in.length:%d, maxR:',arr_in.length,maxR);
+      for (let i=0;i<arr_in.length;i++) {
+       arr_in[i]=parseInt(Math.random()*maxR);
+      }
     }
+    document.getElementById('inpArray').innerHTML = 'Resulting input array: ['+arr_in.toString()+']';
     const res = doIt(arr_in,5,100);
     let strRes = '';
     for (let i=0;i<res.length-1;i++) {
