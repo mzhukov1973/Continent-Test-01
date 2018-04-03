@@ -46,7 +46,7 @@ for(let i=0;i<topNumArr.length;i++) {
       arr_in = document.getElementById('arrManual').value.split(' ');
       arr_in.forEach((val,idx,arr)=>{arr[idx]=isNaN(parseInt(val))?0:parseInt(val)});
     } else {
-      arr_in.length = (isNaN(parseInt(document.getElementById('arrSize').value)))?20:parseInt(document.getElementById('arrSize').value);
+      arr_in.length = (isNaN(parseInt(document.getElementById('arrSize').value)))?12:parseInt(document.getElementById('arrSize').value);
       document.getElementById('arrSize').value = arr_in.length;
       const maxR = (isNaN(parseInt(document.getElementById('arrMaxValue').value)))?100:parseInt(document.getElementById('arrMaxValue').value);
       document.getElementById('arrMaxValue').value = maxR;
@@ -56,13 +56,18 @@ for(let i=0;i<topNumArr.length;i++) {
       }
     }
     document.getElementById('inpArray').innerHTML = 'Resulting input array: ['+arr_in.toString()+']';
+let t0 = performance.now();
     const res = doIt(arr_in,5,100);
+let t1 = performance.now();
+let timRes = 'It took ' + (t1 - t0).toFixed(1) + 'ms to call the function.';
+console.log(timRes);
+
     let strRes = '';
     for (let i=0;i<res.length-1;i++) {
       strRes += res[i].sum + ':' + res[i].combo.toString() + ']<br>[';
     }
     strRes += res[res.length-1].sum + ':' + res[res.length-1].combo.toString() + ']';
-    document.getElementById('firstFive').innerHTML = 'First five element combos with sum <=100:<br>['+strRes+'';
+    document.getElementById('firstFive').innerHTML = 'First five element combos with sum <=100:<br>['+strRes+'<br><br>'+timRes;
     console.log('arr_in',arr_in);
     console.log(res);
   }
