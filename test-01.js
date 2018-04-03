@@ -7,13 +7,22 @@
        if (n==0) {
          if (combo.length>0) {
            let sum=0;
+           let mayAdd = true;
            sum=combo.reduce((total,num)=>{return total+num});
            if (sum<=ceiling) { /*If sum<ceiling:*/
              if (sum>topNumArr[0].sum) { /*AND sum>(minTopNum) then store as proper (push to topNumArr, sort topNumArr by value and loose the lowest element)*/
-               const sall = {'sum':sum,'combo':combo};
-               topNumArr.push(sall);
-               topNumArr.sort((a,b)=>{return a.sum-b.sum});
-               topNumArr.splice(0,1);//Remove the first element
+
+for(let i=0;i<topNumArr.length;i++) {
+  for(let j=0;j<topNumArr[i].combo.length;j++) {
+    combo.every((val,idx,arr)=>{if (val==topNumArr[i].combo[j]) {mayAdd=false;}});
+  }
+}
+               if (mayAdd) {
+                 const sall = {'sum':sum,'combo':combo};
+                 topNumArr.push(sall);
+                 topNumArr.sort((a,b)=>{return a.sum-b.sum});
+                 topNumArr.splice(0,1);//Remove the first element
+               }
              }
            }
          }
