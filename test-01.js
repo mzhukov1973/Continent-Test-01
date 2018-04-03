@@ -46,7 +46,7 @@ for(let i=0;i<topNumArr.length;i++) {
       arr_in = document.getElementById('arrManual').value.split(' ');
       arr_in.forEach((val,idx,arr)=>{arr[idx]=isNaN(parseInt(val))?0:parseInt(val)});
     } else {
-      arr_in.length = (isNaN(parseInt(document.getElementById('arrSize').value)))?12:parseInt(document.getElementById('arrSize').value);
+      arr_in.length = (isNaN(parseInt(document.getElementById('arrSize').value)))?10:parseInt(document.getElementById('arrSize').value);
       document.getElementById('arrSize').value = arr_in.length;
       const maxR = (isNaN(parseInt(document.getElementById('arrMaxValue').value)))?100:parseInt(document.getElementById('arrMaxValue').value);
       document.getElementById('arrMaxValue').value = maxR;
