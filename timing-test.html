@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang=ru>
+ <head>
+  <meta charset='utf-8'>
+  <title>Timings</title>
+  <link href='test-01.css' rel='stylesheet'>
+  <script>
+   function doIt() {
+     let t00         = performance.now();
+     let timRes = '', counter = 0, currCombo = [];
+     const limSum    = parseInt(document.getElementById('limSum').value,10);
+     let arrLength   = parseInt(document.getElementById('arrSize').value,10);
+     const arrMaxVal = parseInt(document.getElementById('arrMaxVal').value,10);
+     let arr         = document.getElementById('arrMan').value.split(' ');
+     if (document.getElementById('arrMan').value.length==0) {
+       arr = new Array(arrLength);
+       for (let i=0; i < arrLength; i++) {
+         arr[i] = Math.round(Math.random()*arrMaxVal);
+       }
+     } else {
+       arr.forEach((val,idx,arr)=>{arr[idx]=isNaN(parseInt(val,10))?0:parseInt(val,10);});
+       arrLength = arr.length;
+     }
+
+     const totLoops = arrLength*(arrLength-1)*(arrLength-2)*(arrLength-3)*(arrLength-4);
+
+     const k_combinations = (osl,set,k,limitSum = 100) => {
+       if ( k > set.length || k <= 0 ) {return {'arr':[],'sum':0};}
+
+       if (k === osl) {
+         let tmpSum = set.reduce((total,val)=>(total+parseInt(val,10)));
+         if (tmpSum > limitSum) {
+           return {'arr':[],'sum':0};
+         } else {
+           return {'arr':[set],'sum':tmpSum};
+         }
+       }
+
+       const combs = [];
+       if (k === 1) {
+         for (let i=0; i < set.length; i++) {
+           if (set[i] > limitSum) {
+             combs.push({'arr':[],'sum':0});
+           } else {
+             combs.push({'arr':[set[i]],'sum':set[i]});
+           }
+         }
+         return combs;
+       }
+
+       for (let i=0; i < set.length-k+1; i++) {
+         const head = set.slice(i,i+1);
+         const intHead = parseInt(head,10);
+         if (intHead === 0) {continue;}
+
+         const tailcombs = k_combinations(osl, set.slice(i+1), k-1, limitSum);
+
+         for (let j=0;j<tailcombs.length;j++) {
+           if (tailcombs[j].arr.length == 0) {continue;}
+           if (tailcombs[j].sum > limitSum)  {continue;}
+           let tmpSum = tailcombs[j].sum + intHead;
+           if (tmpSum > limitSum) {continue;}
+           combs.push({'arr':(head.concat(tailcombs[j].arr)),'sum':tmpSum});
+         }
+       }
+       return combs;
+     }
+
+     const combinations = (set,kmin=1,limitSum=100) => {
+       const combs=[];
+       for (let k=kmin;k<=set.length;k++) {
+         const k_combs = k_combinations(set.length,set,k,limitSum);
+         for (let i=0;i<k_combs.length;i++) {
+         if (k_combs[i].arr.length<=1) {continue;}
+
+           if ((typeof combs[4])==='undefined') {/*console.log('combs[4] undefined, must push()...');*/}
+           else if (combs[4].sum>=k_combs[i].sum) {/*console.log('combs[4] defined, but sombs[4].sum >= k_combs[i].sum must NOT push(), continuing...');*/continue;}
+
+           combs.push(k_combs[i]);
+           combs.sort((a,b)=>(b.sum-a.sum));
+           if (combs.length>5) {combs.pop();}
+         }
+       }
+       return combs;
+     }
+
+     arr.sort((a,b)=>(b-a));
+     console.log('%carr: ','color:green;',arr);
+     console.log('%climSum: %d','color:green;',limSum);
+     t0 = performance.now();
+     let combos = combinations(arr,1,limSum);
+     t1 = performance.now();
+     timRes += 'It took ' + Number((t1 - t0).toFixed(3)).toLocaleString() + 'ms to run through an array-sifting loop system.<br>';
+     let combosRep = '';
+     /*console.log('%cCOMBOS:','color:cyan;font-weight:700;');*/
+     combos.forEach((val)=>{if((typeof val)!=='undefined') {combosRep += '{arr:['+val.arr.toString()+'],sum:'+val.sum+'}<br>';/*console.log('%c{arr:[%s],sum:%d}','color:cyan;font-weight:700;',val.arr.toString(),val.sum,val);*/} else {console.log('undef');}});
+     counter = combos.length;
+     t1 = performance.now();
+     timRes += 'It took ' + Number((t1 - t00).toFixed(3)).toLocaleString() + 'ms to call the whole function.';
+     document.getElementById('inpArray').innerHTML = 'Array size was '+parseInt(document.getElementById('arrSize').value,10)+'.<br>Array: ['+arr.toString()+']<br>'+timRes;
+     document.getElementById('inpArray').innerHTML += '<hr>' + combosRep;
+     document.getElementById('ind').innerHTML = '<span style="color:green;font-weight:700;">Done.</span>';
+   }
+
+   function preDoIt() {
+     document.getElementById('ind').innerHTML = '<span style="color:red;font-weight:700;">Working....</span>';
+     setTimeout(doIt,100);
+   }
+  </script>
+ </head>
+ <body>
+
+ <div class='main'>
+  Random input array size: <input type=text id=arrSize value='10' size=20><br>
+  Random input array max value: <input type=text id=arrMaxVal value='100' size=20><br>
+  Enter array elements manually (space-delimited): <input type=text id=arrMan value='' placeholder='Array element list' size=20><br>
+  Input limitSum: <input type=text id=limSum value='100' size=20><br>
+  <input type=button value='Do it' onClick='preDoIt();'><br>
+  <hr>
+  <div id=ind></div>
+  <div id=inpArray></div>
+ </div>
+
+ </body>
+</html>
