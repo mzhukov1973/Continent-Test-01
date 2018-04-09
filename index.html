@@ -2,7 +2,7 @@
 <html lang=ru>
  <head>
   <meta charset='utf-8'>
-  <title>Timings</title>
+  <title>Timings 02 (01 + median-based slashing)</title>
   <link href='test-01.css' rel='stylesheet'>
   <script>
    function doIt() {
@@ -22,82 +22,96 @@
        arrLength = arr.length;
      }
 
-     const totLoops = arrLength*(arrLength-1)*(arrLength-2)*(arrLength-3)*(arrLength-4);
-
-     const k_combinations = (osl,set,k,limitSum = 100) => {
-       if ( k > set.length || k <= 0 ) {return {'arr':[],'sum':0};}
-
-       if (k === osl) {
-         let tmpSum = set.reduce((total,val)=>(total+parseInt(val,10)));
-         if (tmpSum > limitSum) {
-           return {'arr':[],'sum':0};
-         } else {
-           return {'arr':[set],'sum':tmpSum};
+     const medianSlashing = (set, numComb = 5, limitSum = 100) => {
+       if (typeof set !== 'undefined') {
+         if (!Array.isArray(set)) {
+           console.error('%cERROR! [medianSlashing(set,numComb,limitSum)]: %cThe \'%cset%c\' argument is %cnot an array%c, leaving function now.','color:red;font-weight:700;','color:red;font-weight:400;', 'color:red;font-weight:700;','color:red;font-weight:400;', 'color:red;font-weight:700;','color:red;font-weight:400;');
+           return false;
          }
+       } else {
+         console.error('%cERROR! [medianSlashing(set,numComb,limitSum)]: %cThe \'%cset%c\' argument is %cundefined%c, leaving function now.','color:red;font-weight:700;','color:red;font-weight:400;', 'color:red;font-weight:700;','color:red;font-weight:400;', 'color:red;font-weight:700;','color:red;font-weight:400;');
+         return false;
        }
 
-       const combs = [];
-       if (k === 1) {
-         for (let i=0; i < set.length; i++) {
-           if (set[i] > limitSum) {
-             combs.push({'arr':[],'sum':0});
-           } else {
-             combs.push({'arr':[set[i]],'sum':set[i]});
-           }
-         }
-         return combs;
+       if (set.length<6) { /*sanity check*/
+         console.error('%cERROR! [medianSlashing(set,numComb,limitSum)]: %cArray \'%clength%c\' is %cless than 6%c. Sanity check failed, leaving function now.','color:red;font-weight:700;','color:red;font-weight:400;', 'color:red;font-weight:700;','color:red;font-weight:400;', 'color:red;font-weight:700;','color:red;font-weight:400;');
+         return false;
        }
 
-       for (let i=0; i < set.length-k+1; i++) {
-         const head = set.slice(i,i+1);
-         const intHead = parseInt(head,10);
-         if (intHead === 0) {continue;}
+       set.sort((a,b)=>(b-a));
+       console.log('%cBase array (sorted): %c[%s]%c.','color:green;','font-weight:700;',set.toString(),'font-weight:400;');
 
-         const tailcombs = k_combinations(osl, set.slice(i+1), k-1, limitSum);
+       let arrCoTot = [];
+       let arrCo = [];
+       arrCo[1] = [];
+       set.forEach((val,idx,arr)=>{   /* USE FIRSTINDEXOF?... iterations*/
+         if (val>limitSum) {return;}
+         arrCo[1].push(val);
+       });
 
-         for (let j=0;j<tailcombs.length;j++) {
-           if (tailcombs[j].arr.length == 0) {continue;}
-           if (tailcombs[j].sum > limitSum)  {continue;}
-           let tmpSum = tailcombs[j].sum + intHead;
-           if (tmpSum > limitSum) {continue;}
-           combs.push({'arr':(head.concat(tailcombs[j].arr)),'sum':tmpSum});
-         }
+       let doneIt = true;
+       arrCo[2] = [];
+       arrCo[1].forEach((val,idx,arr)=>{
+         arrCo[1].forEach((val2,idx2,arr2)=>{
+           if ((val+val2)>limitSum) {return;}
+           if (idx===idx2) {return;}
+           arrCo[2].push({'sum':(val+val2),'combo':[val,val2],'idxs':[idx,idx2]});
+         });
+       });
+       arrCo[2].sort((a,b)=>(b.sum-a.sum));
+       arrCoTot = arrCoTot.concat(arrCo[2].slice(0,numComb));
+       arrCoTot.sort((a,b)=>(b.sum-a.sum));
+       arrCoTot.splice(-1*((arrCoTot.length>numComb)?(arrCoTot.length-numComb):0),((arrCoTot.length>numComb)?(arrCoTot.length-numComb):0));
+       arrCoTot.forEach((val)=>{
+         if (val.sum!=limitSum) {doneIt=false;}
+       });
+       if (doneIt) {return arrCoTot;}
+
+       for(let i=3;i<arrCo[1].length;i++) {
+         doneIt = true;
+         arrCo[i] = [];
+         arrCo[1].forEach((val,idx,arr)=>{
+           arrCo[i-1].forEach((val2,idx2,arr2)=>{
+             if ((val+val2.sum)>limitSum) {return;}
+             if (val2.idxs.includes(idx)) {return;}
+             arrCo[i].push({'sum':(val+val2.sum),'combo':[val,...val2.combo],'idxs':[idx,...val2.idxs]});
+           });
+         });
+         arrCo[i-1].length = 0;
+         arrCo[i].sort((a,b)=>(b.sum-a.sum));
+         arrCoTot = arrCoTot.concat(arrCo[i].slice(0,numComb));
+         arrCoTot.sort((a,b)=>(b.sum-a.sum));
+         arrCoTot.splice(-1*((arrCoTot.length>numComb)?(arrCoTot.length-numComb):0),((arrCoTot.length>numComb)?(arrCoTot.length-numComb):0));
+         arrCoTot.forEach((val)=>{
+           if (val.sum!=limitSum) {doneIt=false;}
+         });
+         if (doneIt) { return arrCoTot;}
        }
-       return combs;
+
+       return arrCoTot;;
      }
 
-     const combinations = (set,kmin=1,limitSum=100) => {
-       const combs=[];
-       for (let k=kmin;k<=set.length;k++) {
-         const k_combs = k_combinations(set.length,set,k,limitSum);
-         for (let i=0;i<k_combs.length;i++) {
-         if (k_combs[i].arr.length<=1) {continue;}
 
-           if ((typeof combs[4])==='undefined') {/*console.log('combs[4] undefined, must push()...');*/}
-           else if (combs[4].sum>=k_combs[i].sum) {/*console.log('combs[4] defined, but sombs[4].sum >= k_combs[i].sum must NOT push(), continuing...');*/continue;}
-
-           combs.push(k_combs[i]);
-           combs.sort((a,b)=>(b.sum-a.sum));
-           if (combs.length>5) {combs.pop();}
-         }
-       }
-       return combs;
-     }
-
-     arr.sort((a,b)=>(b-a));
-     console.log('%carr: ','color:green;',arr);
-     console.log('%climSum: %d','color:green;',limSum);
      t0 = performance.now();
-     let combos = combinations(arr,1,limSum);
+     let combos = medianSlashing(arr,5,limSum);
      t1 = performance.now();
      timRes += 'It took ' + Number((t1 - t0).toFixed(3)).toLocaleString() + 'ms to run through an array-sifting loop system.<br>';
      let combosRep = '';
-     /*console.log('%cCOMBOS:','color:cyan;font-weight:700;');*/
-     combos.forEach((val)=>{if((typeof val)!=='undefined') {combosRep += '{arr:['+val.arr.toString()+'],sum:'+val.sum+'}<br>';/*console.log('%c{arr:[%s],sum:%d}','color:cyan;font-weight:700;',val.arr.toString(),val.sum,val);*/} else {console.log('undef');}});
+     console.log('%cCOMBOS:','color:cyan;font-weight:700;');
+     combos.forEach((val)=>{
+       if ((typeof val)!=='undefined') {
+         combosRep += '{combo:['+val.combo.toString()+'],sum:'+val.sum+'}<br>';
+         console.log('%c{combo:[%s],sum:%d}','color:cyan;font-weight:700;',val.combo.toString(),val.sum,val);
+       } else {
+         combosRep += 'undef<br>';
+         console.log('undef');
+       }
+     });
      counter = combos.length;
      t1 = performance.now();
      timRes += 'It took ' + Number((t1 - t00).toFixed(3)).toLocaleString() + 'ms to call the whole function.';
-     document.getElementById('inpArray').innerHTML = 'Array size was '+parseInt(document.getElementById('arrSize').value,10)+'.<br>Array: ['+arr.toString()+']<br>'+timRes;
+     document.getElementById('inpArray').innerHTML =  'Array size was '+parseInt(document.getElementById('arrSize').value,10)+'.<br>';
+     document.getElementById('inpArray').innerHTML += 'Array: ['+arr.toString()+']<br>'+timRes;
      document.getElementById('inpArray').innerHTML += '<hr>' + combosRep;
      document.getElementById('ind').innerHTML = '<span style="color:green;font-weight:700;">Done.</span>';
    }
@@ -108,11 +122,24 @@
    }
   </script>
  </head>
- <body>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <body>
  <div class='main'>
   Random input array size: <input type=text id=arrSize value='10' size=20><br>
-  Random input array max value: <input type=text id=arrMaxVal value='500' size=20><br>
+  Random input array max value: <input type=text id=arrMaxVal value='100' size=20><br>
   Enter array elements manually (space-delimited): <input type=text id=arrMan value='' placeholder='Array element list' size=20><br>
   Input limitSum: <input type=text id=limSum value='100' size=20><br>
   <input type=button value='Do it' onClick='preDoIt();'><br>
