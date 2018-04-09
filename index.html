@@ -91,7 +91,7 @@
        return arrCoTot;;
      }
 
-
+     const arrRepStr2 = 'Array: ['+arr.toString().replace(/,/g,', ')+']<br>';
      t0 = performance.now();
      let combos = medianSlashing(arr,5,limSum);
      t1 = performance.now();
@@ -111,7 +111,7 @@
      t1 = performance.now();
      timRes += 'It took ' + Number((t1 - t00).toFixed(3)).toLocaleString() + 'ms to call the whole function.';
      document.getElementById('inpArray').innerHTML =  'Array size was '+parseInt(document.getElementById('arrSize').value,10)+'.<br>';
-     document.getElementById('inpArray').innerHTML += 'Array: ['+arr.toString()+']<br>'+timRes;
+     document.getElementById('inpArray').innerHTML += arrRepStr2 + timRes;
      document.getElementById('inpArray').innerHTML += '<hr>' + combosRep;
      document.getElementById('ind').innerHTML = '<span style="color:green;font-weight:700;">Done.</span>';
    }
